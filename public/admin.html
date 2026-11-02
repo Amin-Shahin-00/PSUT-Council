@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PSUT MailBox Admin</title>
+  <script>
+    if (location.protocol === "file:") location.replace("http://localhost:8000/admin");
+  </script>
+  <link rel="stylesheet" href="/styles.css" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='3' fill='%230a1f3d'/%3E%3Cpath d='M5 8l7 5 7-5M5 7h14v10H5z' fill='none' stroke='%23c9a227' stroke-width='1.8'/%3E%3C/svg%3E" />
+</head>
+<body class="admin-body">
+  <div class="offline hidden" id="offline">
+    The PSUT MailBox server is not running. Open the <strong>PSUT-Council</strong> folder, double-click <code>start.bat</code>, and keep that window open.
+  </div>
+
+  <header class="topbar">
+    <div class="topbar-inner" style="max-width:none">
+      <a class="wordmark" href="/admin">
+        <img class="council-logo" src="/assets/student-council.png" alt="PSUT Student Council" width="364" height="205" /><span class="uni">PSUT</span><span class="bar"></span><span class="app">MailBox &middot; Council</span>
+      </a>
+      <div style="display:flex;gap:24px">
+        <a class="top-link" href="/">Student site</a>
+        <button class="top-link hidden" id="logoutBtn">Log out</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Login -->
+  <div class="login hidden" id="loginView">
+    <div class="panel">
+      <div class="panel-head">
+        <h2>Council sign in</h2>
+        <p>Only Student Council members can view submissions.</p>
+      </div>
+      <div class="panel-body">
+        <div class="alert alert-error" id="loginError" role="alert"></div>
+        <form id="loginForm">
+          <div class="field">
+            <label for="password">Password</label>
+            <input type="password" id="password" autocomplete="current-password" required />
+          </div>
+          <button class="btn btn-primary btn-block" type="submit">Sign in</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dashboard -->
+  <div class="shell hidden" id="dashView">
+    <aside class="side">
+      <h4>Mailbox</h4>
+      <ul class="folders" id="folders">
+        <li><button data-status="" class="active">All messages <span class="count" id="cAll">0</span></button></li>
+        <li><button data-status="New">New <span class="count" id="cNew">0</span></button></li>
+        <li><button data-status="In Review">In review <span class="count" id="cReview">0</span></button></li>
+        <li><button data-status="Resolved">Resolved <span class="count" id="cResolved">0</span></button></li>
+        <li><button data-status="Dismissed">Dismissed <span class="count" id="cDismissed">0</span></button></li>
+      </ul>
+      <div class="side-foot"><span id="cAnon">0</span> of <span id="cAll2">0</span> messages sent anonymously</div>
+    </aside>
+
+    <section class="main">
+      <div class="main-head">
+        <div>
+          <h1 id="viewTitle">All messages</h1>
+          <p id="viewSub">Showing 0 messages</p>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-outline btn-sm" id="refreshBtn">Refresh</button>
+          <button class="btn btn-primary btn-sm" id="exportBtn">Export CSV</button>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <input type="search" id="fSearch" placeholder="Search subject, message, name or reference" />
+        <select id="fCategory"><option value="">All categories</option></select>
+        <select id="fType"><option value="">All types</option></select>
+        <select id="fIdentity">
+          <option value="">Anonymous &amp; named</option>
+          <option value="anon">Anonymous only</option>
+          <option value="named">Named only</option>
+        </select>
+      </div>
+
+      <div class="sheet">
+        <div class="sheet-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Subject</th>
+                <th>Category</th>
+                <th>Type</th>
+                <th>From</th>
+                <th>Status</th>
+                <th>Received</th>
+                <th>Ref</th>
+              </tr>
+            </thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+        <div class="empty hidden" id="emptyState">No messages here.</div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Detail drawer -->
+  <div class="scrim" id="scrim"></div>
+  <aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="mSubject">
+    <div class="drawer-head">
+      <div>
+        <div class="mono" id="mRef"></div>
+        <h3 id="mSubject" dir="auto"></h3>
+      </div>
+      <button class="x" id="drawerClose" aria-label="Close">&times;</button>
+    </div>
+    <div class="drawer-body">
+      <div class="facts">
+        <div><span class="k">Type</span><span id="mType"></span></div>
+        <div><span class="k">Category</span><span id="mCategory"></span></div>
+        <div><span class="k">From</span><span id="mFrom"></span></div>
+        <div><span class="k">Received</span><span id="mDate"></span></div>
+        <div><span class="k">Student ID</span><span id="mSid"></span></div>
+        <div><span class="k">Email</span><span id="mEmail"></span></div>
+      </div>
+      <div class="msg" id="mMessage" dir="auto"></div>
+
+      <div class="field">
+        <label for="mStatus">Status</label>
+        <select id="mStatus"></select>
+      </div>
+      <div class="field">
+        <label for="mNote">Internal note <span class="opt">(admins only)</span></label>
+        <textarea id="mNote" dir="auto" style="min-height:100px" maxlength="2000" placeholder="e.g. Forwarded to the Dean of Student Affairs"></textarea>
+      </div>
+      <div style="font-size:.8rem;color:var(--muted)">Last updated <span id="mUpdated"></span></div>
+    </div>
+    <div class="drawer-foot">
+      <button class="btn btn-danger btn-sm" id="mDelete">Delete</button>
+      <button class="btn btn-primary" id="mSave">Save changes</button>
+    </div>
+  </aside>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="/i18n.js"></script>
+  <script src="/admin.js"></script>
+</body>
+</html>

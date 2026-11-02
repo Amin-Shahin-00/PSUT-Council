@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PSUT MailBox</title>
+  <script>
+    // Opened by double-clicking the file? Send the browser to the running server instead.
+    if (location.protocol === "file:") location.replace("http://localhost:8000/");
+  </script>
+  <link rel="stylesheet" href="/styles.css" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='3' fill='%230a1f3d'/%3E%3Cpath d='M5 8l7 5 7-5M5 7h14v10H5z' fill='none' stroke='%23c9a227' stroke-width='1.8'/%3E%3C/svg%3E" />
+</head>
+<body>
+  <div class="offline hidden" id="offline">
+    The PSUT MailBox server is not running. Open the <strong>PSUT-Council</strong> folder, double-click <code>start.bat</code>, and keep that window open.
+  </div>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="wordmark" href="/">
+        <img class="council-logo" src="/assets/student-council.png" alt="PSUT Student Council" width="364" height="205" /><span class="uni">PSUT</span><span class="bar"></span><span class="app">MailBox</span>
+      </a>
+      <a class="top-link" href="/admin">Council login</a>
+    </div>
+  </header>
+
+  <main class="page">
+    <div class="split">
+      <section class="intro">
+        <div class="eyebrow">Student Council &middot; Princess Sumaya University for Technology</div>
+        <h1>Say it plainly.<br /><em>We're listening.</em></h1>
+        <p class="sub">Use this form to send a complaint, note or suggestion to the Student Council. You can include your name, or send it anonymously.</p>
+        <ul class="steps">
+          <li><span class="k">Choose</span><span class="v">Pick the category that fits. This sends your message to the right council member.</span></li>
+          <li><span class="k">Write</span><span class="v">Include details: course codes, buildings, dates. The more specific, the faster we can act.</span></li>
+          <li><span class="k">Track</span><span class="v">You'll get a reference number to quote if you follow up with the council.</span></li>
+          <li><span class="k">Privacy</span><span class="v">Anonymous messages store no name, student ID, email or IP address.</span></li>
+        </ul>
+      </section>
+
+      <section>
+        <div class="panel" id="formCard">
+          <div class="panel-head">
+            <h2>New message</h2>
+            <p>Fields marked * are required.</p>
+          </div>
+          <div class="panel-body">
+            <div class="alert alert-error" id="formError" role="alert"></div>
+
+            <form id="mailForm" novalidate>
+              <div class="field">
+                <span class="label">Type *</span>
+                <div class="seg" id="typeChips"></div>
+              </div>
+
+              <div class="field">
+                <label for="category">Category *</label>
+                <select id="category" required>
+                  <option value="">Select a category</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label for="subject">Subject *</label>
+                <input type="text" id="subject" dir="auto" maxlength="150" placeholder="One line summary" required />
+              </div>
+
+              <div class="field">
+                <label for="message">Message *</label>
+                <textarea id="message" dir="auto" maxlength="5000" placeholder="Describe what happened, where and when." required></textarea>
+                <div class="counter"><span id="msgCount">0</span> / 5000</div>
+              </div>
+
+              <div class="field">
+                <span class="label">Send as *</span>
+                <div class="seg">
+                  <label><input type="radio" name="identity" value="anonymous" checked /><span>Anonymous</span></label>
+                  <label><input type="radio" name="identity" value="named" /><span>With my name</span></label>
+                </div>
+                <div class="identity-note" id="anonNotice">The council will not know who sent this message.</div>
+              </div>
+
+              <div class="named-fields" id="namedFields">
+                <div class="field">
+                  <label for="name">Full name *</label>
+                  <input type="text" id="name" dir="auto" maxlength="100" />
+                </div>
+                <div class="two">
+                  <div class="field">
+                    <label for="studentId">Student ID <span class="opt">(optional)</span></label>
+                    <input type="text" id="studentId" maxlength="12" inputmode="numeric" />
+                  </div>
+                  <div class="field">
+                    <label for="email">Email <span class="opt">(optional)</span></label>
+                    <input type="email" id="email" maxlength="120" placeholder="@std.psut.edu.jo" />
+                  </div>
+                </div>
+              </div>
+
+              <div class="submit-row">
+                <small>Messages go straight to the Student Council inbox.</small>
+                <button type="submit" class="btn btn-gold" id="submitBtn">Send message</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div class="panel hidden" id="successCard">
+          <div class="done">
+            <div class="tick">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+            </div>
+            <h2>Message sent</h2>
+            <p>The Student Council has received your message. Save this reference number if you want to follow up later.</p>
+            <div class="ref">
+              <div><small>Reference</small><strong id="refNumber">&mdash;</strong></div>
+              <button class="btn btn-sm btn-outline" style="color:#fff;border-color:rgba(255,255,255,.35)" id="copyBtn" type="button">Copy</button>
+            </div>
+            <button class="btn btn-primary" id="newBtn" type="button">Send another message</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="foot">
+    <div>
+      <span>&copy; <span id="year"></span> PSUT Student Council</span>
+      <span>Princess Sumaya University for Technology &middot; Amman, Jordan</span>
+    </div>
+  </footer>
+
+  <script src="/i18n.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>
